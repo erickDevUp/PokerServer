@@ -23,7 +23,16 @@ class GameConsumer(WebsocketConsumer):
         PokerGame.create_new_game_turn(self.getId)
         PokerGame.create_new_game_board()
         
-        self.send(text_data=json.dumps(PokerGame.get_game_info()))
+        self.send(json.dumps({"info":PokerGame.get_game_info(),"yourID":self.getId}))
+        
+        async_to_sync(self.channel_layer.group_send)(
+            self.id, # El nombre del grupo, que en este caso es el room_id
+            {
+                "type": "newuseradd",
+                "info": PokerGame.get_game_info(),
+                "user": self.getId
+            }
+        )
 
         
     def disconnect(self, code):
@@ -85,6 +94,16 @@ class GameConsumer(WebsocketConsumer):
                 'message':message,
                 'islog':islog,
             }))
+            
+    def newuseradd(self, event):
+        info = event['info']
+        userSender= event['user']
+        current_id = self.getId
+        print(current_id,">>>>>>>",userSender)
+        if current_id != userSender:
+            self.send(text_data=json.dumps({
+                'info':info,
+            }))
     
     def game_changename(self, event):
         # Este método se llama cuando se recibe un mensaje del tipo 'game.message'
@@ -94,3 +113,5 @@ class GameConsumer(WebsocketConsumer):
             'newName': message,
             'newData': PokerGame.get_game_info()
         }))
+        
+    
