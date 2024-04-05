@@ -38,6 +38,14 @@ class GameConsumer(WebsocketConsumer):
     def disconnect(self, code):
         print('ws disconnect')
         PokerGame.remove_player_from_game(self.getId)
+        async_to_sync(self.channel_layer.group_send)(
+            self.id, # El nombre del grupo, que en este caso es el room_id
+            {
+                "type": "newuseradd",
+                "info": PokerGame.get_game_info(),
+                "user": self.getId
+            }
+        )
         async_to_sync(self.channel_layer.group_discard)(self.id, self.channel_name)
     
     def receive(self, text_data):
