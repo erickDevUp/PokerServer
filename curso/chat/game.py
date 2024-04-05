@@ -82,3 +82,10 @@ class Game:
            self.players[player_id]['name'] = new_name
        else:
            print(f"No se encontró el jugador con ID: {player_id}")
+           
+    def remove_player_from_game(self, player_id):
+        """Elimina un jugador del juego por su ID."""
+        if player_id in self.players:
+            del self.players[player_id]
+        else:
+            print(f"No se encontró el jugador con ID: {player_id}")
